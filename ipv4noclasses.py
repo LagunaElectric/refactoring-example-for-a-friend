@@ -1,59 +1,59 @@
 print('\nSubnets Calculator (IPv4)')
 while True:
-    ip = input('\n\nFill in the IP address in the format www.xxx.yyy.zzz : ')
-    octip = ip.split(".")
+    ip: str = input('\n\nFill in the IP address in the format www.xxx.yyy.zzz : ')  # declaration
+    ip_octets = ip.split(".")
 
-    int_octip = [int(i) for i in octip]
+    # we've just identified the class
 
-    subnet = input("\nFill in the subnet mask in the format www.xxx.yyy.zzz: ")
+    ip_octets_as_ints = [int(i) for i in ip_octets]
 
-    octsub = subnet.split(".")
-    int_octsub = [int(j) for j in octsub]
-    ipbin = []
-    ipbinoct = [bin(i).split("b")[1] for i in int_octip]
+    subnet_mask = input("\nFill in the subnet mask in the format www.xxx.yyy.zzz: ")
 
-    for i in range(0, len(ipbinoct)):
-        if len(ipbinoct[i]) < 8:
-            filledbin = ipbinoct[i].zfill(8)
-            ipbin.append(filledbin)
+    subnet_mask_octets = subnet_mask.split(".")
+    subnet_mask_octets_ints = [int(j) for j in subnet_mask_octets]
+    binary_ip_octets = [bin(i).split("b")[1] for i in ip_octets_as_ints]
+
+    filled_bin_octets = []
+    for octet in range(0, len(binary_ip_octets)):
+        if len(binary_ip_octets[octet]) < 8:
+            filledbin = binary_ip_octets[octet].zfill(8)
+            filled_bin_octets.append(filledbin)
         else:
-            ipbin.append(ipbinoct[i])
-    ip_bin_mask = "".join(ipbin)
+            filled_bin_octets.append(binary_ip_octets[octet])
+    ip_bin_mask = "".join(filled_bin_octets)
 
-    subbin = []
+    binary_subnet_mask_octets = [bin(i).split("b")[1] for i in subnet_mask_octets_ints]
 
-    sub_bin_octet = [bin(i).split("b")[1] for i in int_octsub]
-
-    for i in sub_bin_octet:
-        if len(i) < 8:
-            subnetfilled = i.zfill(8)
-            subbin.append(subnetfilled)
+    filled_bin_submask_octets = []
+    for octet in binary_subnet_mask_octets:
+        if len(octet) < 8:
+            subnet_filled = octet.zfill(8)
+            filled_bin_submask_octets.append(subnet_filled)
         else:
-            subbin.append(i)
-    submask = "".join(subbin)
+            filled_bin_submask_octets.append(octet)
+    binary_subnet_mask = "".join(filled_bin_submask_octets)
 
+    bin_subnet_mask_zeros = binary_subnet_mask.count("0")
+    bin_subnet_mask_ones = 32 - bin_subnet_mask_zeros
+    hosts_available = abs(2 ** bin_subnet_mask_zeros - 2)
+    bin_network_id = ip_bin_mask[:bin_subnet_mask_ones] + "0" * bin_subnet_mask_zeros
+    bin_broadcast_id = ip_bin_mask[:bin_subnet_mask_ones] + "1" * bin_subnet_mask_zeros
 
-    zeros = submask.count("0")
-    ones = 32 - zeros
-    hostsavailabe = abs(2 ** zeros - 2)
-    netidbin = ip_bin_mask[:ones] + "0" * zeros
-    broadcastidbin = ip_bin_mask[:ones] + "1" * zeros
+    network_address_bin_octets = []
+    broadcast_address_bin_octets = []
 
-    networkaddbinoct = []
-    broadcastbinoct = []
+    [network_address_bin_octets.append(i) for i in [bin_network_id[j:j + 8]
+                                                    for j in range(0, len(bin_network_id), 8)]]
+    [broadcast_address_bin_octets.append(i) for i in [bin_broadcast_id[j:j + 8]
+                                                      for j in range(0, len(bin_broadcast_id), 8)]]
 
-    [networkaddbinoct.append(i) for i in [netidbin[j:j + 8]
-                                          for j in range(0, len(netidbin), 8)]]
-    [broadcastbinoct.append(i) for i in [broadcastidbin[j:j + 8]
-                                         for j in range(0, len(broadcastidbin), 8)]]
+    network_address = ".".join([str(int(octet, 2)) for octet in network_address_bin_octets])
+    broadcast_address = ".".join([str(int(octet, 2)) for octet in broadcast_address_bin_octets])
 
-    networkadd = ".".join([str(int(i, 2)) for i in networkaddbinoct])
-    broadcastadd = ".".join([str(int(i, 2)) for i in broadcastbinoct])
-
-    print("CIDR:", ones)
-    print("NetID:", networkadd)
-    print("Number of hosts in this subnet:", hostsavailabe)
-    print("Broadcast:", broadcastadd)
+    print("CIDR:", bin_subnet_mask_ones)
+    print("NetID:", network_address)
+    print("Number of hosts in this subnet:", hosts_available)
+    print("Broadcast:", broadcast_address)
 
     while True:
         yes = ['s', 'S']
